@@ -1,0 +1,16 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated"
+}
+
+model Tasks {
+  id   String  @id @default(cuid())
+  task String
+  done Boolean @default(false)
+}

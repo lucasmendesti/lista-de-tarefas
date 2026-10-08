@@ -1,4 +1,4 @@
-import React from "react";
+"use server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,24 +33,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
-const page = () => {
+import EditTask from "@/components/edit-task";
+import { getTasks, createTask, deleteTask } from "@/actions/tasks-actions";
+//import type { Tasks } from "@/generated/client";
+
+export default async function Page() {
+  const taskList = await getTasks();
+
   return (
     <main className="w-full h-screen bg-slate-100 flex justify-center items-center">
       <Card className="w-lg">
-        <CardHeader className="flex gap-2">
-          <Input placeholder="Adicionar tarefa" />
-          <Button variant="outline" className="cursor-pointer">
-            <Plus /> Cadastrar
-          </Button>
-        </CardHeader>
+        <form action={createTask}>
+          <CardHeader className="flex gap-2">
+            <Input name="tarefa" placeholder="Adicionar tarefa" />
+            <Button type="submit" variant="outline" className="cursor-pointer">
+              <Plus /> Cadastrar
+            </Button>
+          </CardHeader>
+        </form>
         <CardContent>
           <Separator className="mb-4" />
           {/* Icones de filtro da lista */}
@@ -67,32 +68,33 @@ const page = () => {
           </div>
 
           {/* Elementos da lista */}
-
           <div className="mt-4 border-b ">
-            <div className="h-14 flex justify-between items-center">
-              <div className="w-1 h-full bg-green-300"></div>
-              <p className="flex-1 px-2 text-sm">Estudar React</p>
-              <div className="flex items-center gap-4 ">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Pencil size={16} className="cursor-pointer" />
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Editar Tarefa</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex gap-2">
-                      <input placeholder="Editar tarefa" />
-                      <Button className="cursor-pointer">Editar</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <Trash size={16} className="cursor-pointer" />
-              </div>
-            </div>
+            {taskList.map((task) => {
+              const deleteTaskWithID = deleteTask.bind(null, task.id);
+              return (
+                <div
+                  className="h-14 flex justify-between items-center"
+                  key={task.id}
+                >
+                  <div className="w-1 h-full bg-green-300"></div>
+                  <p className="flex-1 px-2 text-sm cursor-pointer hover:text-gray-600">
+                    {task.task}
+                  </p>
+                  <div className="flex items-center gap-4 ">
+                    <EditTask task={task} />
+                    <form action={deleteTaskWithID}>
+                      <button
+                        type="submit"
+                        className="cursor-pointer text-red-500 hover:text-red-700"
+                      >
+                        <Trash size={16} className="cursor-pointer" />
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
           {/* Rodape da lista */}
           <div className="flex justify-between mt-4">
             <div className="flex gap-2 items-center">
@@ -101,15 +103,16 @@ const page = () => {
             </div>
             {/*dialog*/}
             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  className="text-xs h-7 cursor-pointer"
-                  variant="outline"
-                >
-                  {" "}
-                  <Trash /> Limpar Tarefas Concluídas
-                </Button>
-              </AlertDialogTrigger>
+              <AlertDialogTrigger
+                render={
+                  <Button
+                    className="text-xs h-7 cursor-pointer"
+                    variant="outline"
+                  >
+                    <Trash /> Limpar Tarefas Concluídas
+                  </Button>
+                }
+              />
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>
@@ -140,6 +143,4 @@ const page = () => {
       </Card>
     </main>
   );
-};
-
-export default page;
+}
