@@ -40,6 +40,7 @@ import {
   createTask,
   deleteTask,
   toggleTaskStatus,
+  deleteDoneTasks,
 } from "@/actions/tasks-actions";
 import Link from "next/link";
 
@@ -50,6 +51,8 @@ export default async function Page({
 }) {
   const { filtro } = await searchParams;
   const taskList = await getTasks();
+  const totalTasks = taskList.length;
+  const totalCompletedTasks = taskList.filter((task) => task.done).length;
 
   const taskListFiltered = taskList.filter((task) => {
     if (filtro === "nao-finalizadas") return !task.done;
@@ -146,7 +149,9 @@ export default async function Page({
           <div className="flex justify-between mt-4">
             <div className="flex gap-2 items-center">
               <ListCheck size={18} />
-              <p className="text-sm">Tarefas concluídas (3/3)</p>
+              <p className="text-sm">
+                Tarefas concluídas ({totalCompletedTasks}/{totalTasks})
+              </p>
             </div>
             {/*dialog*/}
             <AlertDialog>
@@ -163,11 +168,18 @@ export default async function Page({
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>
-                    Tem certeza que deseja excluir x itens?
+                    Tem certeza que deseja excluir {totalCompletedTasks} itens?
                   </AlertDialogTitle>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogAction>Sim</AlertDialogAction>
+                  <form action={deleteDoneTasks}>
+                    <AlertDialogCancel
+                      type="submit"
+                      className="bg-primary text-primary-foreground cursor-pointer"
+                    >
+                      Sim, excluir
+                    </AlertDialogCancel>
+                  </form>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -175,16 +187,18 @@ export default async function Page({
           </div>
 
           {/* Barra de progresso */}
-          <div className="h-2 w-full bg-red-300 mt-4 rounded-md">
+          <div className="h-2 w-full bg-slate-200 mt-4 rounded-md overflow-hidden">
             <div
-              className="h-full bg-gray-300 rounded-md"
-              style={{ width: "50%" }}
+              className="h-full bg-green-500 rounded-md transition-all duration-300"
+              style={{
+                width: `${totalTasks > 0 ? (totalCompletedTasks / totalTasks) * 100 : 0}%`,
+              }}
             ></div>
           </div>
 
           <div className="flex justify-end items-center mt-2 gap-2">
             <Sigma size={18} />
-            <p className="text-xs">3 tarefas no total</p>
+            <p className="text-xs">{totalTasks} tarefas no total</p>
           </div>
         </CardContent>
       </Card>

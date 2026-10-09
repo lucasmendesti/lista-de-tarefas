@@ -42,7 +42,7 @@ export const EditTask = ({ task }: EditTaskProps) => {
         <form action={updateTaskWithId} className="flex gap-2 w-full mt-2">
           <Input
             name="editarTarefaNome"
-            defaultValue={task.task}
+            defaultValue={task.task || ""}
             placeholder="Editar tarefa"
             className="flex-1"
           />

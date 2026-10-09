@@ -77,3 +77,16 @@ export const toggleTaskStatus = async (id: string, currentStatus: boolean) => {
     }
 }
 
+export const deleteDoneTasks = async () => {
+    try {
+        await prisma.tasks.deleteMany({
+            where: {
+                done: true
+            }
+        })
+        revalidatePath("/")
+    }catch (error){
+        throw error
+    }
+}
+
