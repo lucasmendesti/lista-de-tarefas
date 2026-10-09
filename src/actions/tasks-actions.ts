@@ -5,7 +5,11 @@ import { revalidatePath } from "next/cache";
 // 1. BUSCAR TAREFAS (READ)
 export const getTasks = async () => {
     try {
-        return await prisma.tasks.findMany();
+        return await prisma.tasks.findMany({
+            orderBy: {
+                id: 'asc'
+            }
+        });
     } catch (error) {
         throw error
     }
@@ -58,3 +62,18 @@ export const deleteTask = async (id: string) => {
         throw error
     }
 } 
+
+// 5. ATUALIZAR STATUS
+export const toggleTaskStatus = async (id: string, currentStatus: boolean) => {
+    try {
+        await prisma.tasks.update({
+            where: { id },
+            data: { done: !currentStatus } // Inverte o status
+        });
+        
+        revalidatePath("/");
+    } catch (error) {
+        throw error;
+    }
+}
+

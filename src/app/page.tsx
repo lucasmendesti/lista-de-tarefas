@@ -35,11 +35,27 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import EditTask from "@/components/edit-task";
-import { getTasks, createTask, deleteTask } from "@/actions/tasks-actions";
-//import type { Tasks } from "@/generated/client";
+import {
+  getTasks,
+  createTask,
+  deleteTask,
+  toggleTaskStatus,
+} from "@/actions/tasks-actions";
+import Link from "next/link";
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ filtro?: string }>;
+}) {
+  const { filtro } = await searchParams;
   const taskList = await getTasks();
+
+  const taskListFiltered = taskList.filter((task) => {
+    if (filtro === "nao-finalizadas") return !task.done;
+    if (filtro === "concluidas") return task.done;
+    else return task;
+  });
 
   return (
     <main className="w-full h-screen bg-slate-100 flex justify-center items-center">
@@ -54,32 +70,63 @@ export default async function Page() {
         </form>
         <CardContent>
           <Separator className="mb-4" />
+
           {/* Icones de filtro da lista */}
           <div className="flex gap-2">
-            <Badge variant="default" className="cursor-pointer">
-              <List /> Todas
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer">
-              <CircleMinus /> Não finalizadas
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer">
-              <Check /> Concluídas
-            </Badge>
+            <Link href={"/"}>
+              <Badge
+                variant={!filtro ? "default" : "outline"}
+                className="cursor-pointer"
+              >
+                <List /> Todas
+              </Badge>
+            </Link>
+            <Link href={"/?filtro=nao-finalizadas"}>
+              <Badge
+                variant={filtro === "nao-finalizadas" ? "default" : "outline"}
+                className="cursor-pointer"
+              >
+                <CircleMinus /> Não finalizadas
+              </Badge>
+            </Link>
+            <Link href={"/?filtro=concluidas"}>
+              <Badge
+                variant={filtro === "concluidas" ? "default" : "outline"}
+                className="cursor-pointer"
+              >
+                <Check /> Concluídas
+              </Badge>
+            </Link>
           </div>
 
           {/* Elementos da lista */}
           <div className="mt-4 border-b ">
-            {taskList.map((task) => {
+            {taskListFiltered.map((task) => {
               const deleteTaskWithID = deleteTask.bind(null, task.id);
+              const toggleStatus = toggleTaskStatus.bind(
+                null,
+                task.id,
+                task.done,
+              );
               return (
                 <div
                   className="h-14 flex justify-between items-center"
                   key={task.id}
                 >
-                  <div className="w-1 h-full bg-green-300"></div>
-                  <p className="flex-1 px-2 text-sm cursor-pointer hover:text-gray-600">
-                    {task.task}
-                  </p>
+                  <div
+                    className={`${task.done ? "w-1 h-full bg-green-400" : "w-1 h-full bg-red-400"}`}
+                  ></div>
+                  <form
+                    action={toggleStatus}
+                    className="flex-1 h-full flex items-center"
+                  >
+                    <button
+                      type="submit"
+                      className={`w-full text-left px-2 text-sm cursor-pointer hover:text-gray-600 ${task.done ? "line-through text-gray-400" : ""}`}
+                    >
+                      {task.task}
+                    </button>
+                  </form>
                   <div className="flex items-center gap-4 ">
                     <EditTask task={task} />
                     <form action={deleteTaskWithID}>
