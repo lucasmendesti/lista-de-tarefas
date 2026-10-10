@@ -27,7 +27,7 @@ export const createTask = async (formData: FormData) => {
         });
         
         revalidatePath("/"); // Atualiza o cache da pag para mostrar a nova tarefa
-        return newTask;
+        //return newTask;
     } catch (error) {
         throw error
     }
@@ -44,7 +44,7 @@ export const updateTask = async (id: string, formData: FormData) => {
         });
         
         revalidatePath("/");
-        return updated;
+        //return updated;
     } catch (error) {
         throw error
     }
